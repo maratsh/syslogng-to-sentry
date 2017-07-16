@@ -1,0 +1,39 @@
+#############################################################################
+#
+
+@version: 3.10
+@include "scl.conf"
+
+source s_local {
+    system();
+    internal();
+};
+
+
+source s_syslog_tcp {
+  syslog(
+    ip(0.0.0.0)
+    port(6128)
+    transport("tcp")
+  );
+};
+
+
+
+
+
+destination sentry {
+            python(
+                class("sng2sentry.SentryDestination")
+                options(
+                  "DSN" ("http://id:key@172.17.0.1:8080/10")
+                )
+                on-error("fallback-to-string")
+                value-pairs(scope(everything))
+                );
+                };
+
+log {
+    source(s_syslog_tcp);
+    destination(sentry);
+};
